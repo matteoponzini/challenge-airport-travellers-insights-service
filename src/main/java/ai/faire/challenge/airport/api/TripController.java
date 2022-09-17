@@ -14,22 +14,22 @@ public class TripController {
 
   private final TripService tripService;
 
-  public TripController(TripService tripService){
+  public TripController(TripService tripService) {
     this.tripService = tripService;
   }
 
   @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE}, consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<Trip> saveTrip(@RequestBody Trip trip){
+  public ResponseEntity<Trip> saveTrip(@RequestBody Trip trip) {
     return ResponseEntity.ok(tripService.saveOrUpdate(trip));
   }
 
   @DeleteMapping(produces = {MediaType.APPLICATION_JSON_VALUE}, consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<String> removeTrip(@RequestBody Trip trip){
-    return (tripService.remove(trip))? ResponseEntity.ok().build(): ResponseEntity.notFound().build();
+  public ResponseEntity<String> removeTrip(@RequestBody Trip trip) {
+    return (tripService.remove(trip)) ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
   }
 
   @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<List<Trip>> getAll(){
+  public ResponseEntity<List<Trip>> getAll() {
     return ResponseEntity.ok(tripService.getAll());
   }
 }

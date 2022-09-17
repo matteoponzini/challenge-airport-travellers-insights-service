@@ -21,44 +21,44 @@ class TripRetrieveTest {
   }
 
   @Test
-  void saveWithTripRecordSucceed(){
-    var tripExpected = new Trip("JFK", "LIN", LocalDate.of(2020,10,12),LocalDate.of(2020,10,15) );
+  void saveWithTripRecordSucceed() {
+    var tripExpected = new Trip("JFK", "LIN", LocalDate.of(2020, 10, 12), LocalDate.of(2020, 10, 15));
     var tripSaved = tripRetrieve.saveOrUpdate(tripExpected);
     assertEquals(tripExpected, tripSaved);
   }
 
   @Test
-  void saveShouldFailWhenTripIsNull(){
+  void saveShouldFailWhenTripIsNull() {
     var error = assertThrows(IllegalArgumentException.class, () -> tripRetrieve.saveOrUpdate(null));
-    assertEquals(error.getMessage(),"Trip must not be null");
+    assertEquals(error.getMessage(), "Trip must not be null");
   }
 
 
   @Test
-  void removeWithTripRecordSucceed(){
-    var tripExpected = new Trip("JFK", "LIN", LocalDate.of(2020,10,12),LocalDate.of(2020,10,15) );
+  void removeWithTripRecordSucceed() {
+    var tripExpected = new Trip("JFK", "LIN", LocalDate.of(2020, 10, 12), LocalDate.of(2020, 10, 15));
     tripRetrieve.saveOrUpdate(tripExpected);
     assertTrue(tripRetrieve.remove(tripExpected));
   }
 
   @Test
-  void removeWithTripListsEmptyIsFalse(){
-    var tripExpected = new Trip("JFK", "LIN", LocalDate.of(2020,10,12),LocalDate.of(2020,10,15) );
+  void removeWithTripListsEmptyIsFalse() {
+    var tripExpected = new Trip("JFK", "LIN", LocalDate.of(2020, 10, 12), LocalDate.of(2020, 10, 15));
     assertFalse(tripRetrieve.remove(tripExpected));
   }
 
   @Test
-  void removeShouldFailWhenTripIsNull(){
+  void removeShouldFailWhenTripIsNull() {
     var error = assertThrows(IllegalArgumentException.class, () -> tripRetrieve.remove(null));
-    assertEquals(error.getMessage(),"Trip must not be null");
+    assertEquals(error.getMessage(), "Trip must not be null");
   }
 
   @Test
   void getAll() {
     var tripsExpected = IntStream.range(0, 5)
-      .mapToObj((i)->new Trip("JFK", "LIN", LocalDate.of(2020,10,12),LocalDate.of(2020,10,15) ))
+      .mapToObj((i) -> new Trip("JFK", "LIN", LocalDate.of(2020, 10, 12), LocalDate.of(2020, 10, 15)))
       .collect(Collectors.toList());
-    tripsExpected.forEach(trip ->tripRetrieve.saveOrUpdate(trip));
-    assertEquals(tripsExpected,tripRetrieve.getAll());
+    tripsExpected.forEach(trip -> tripRetrieve.saveOrUpdate(trip));
+    assertEquals(tripsExpected, tripRetrieve.getAll());
   }
 }

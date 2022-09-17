@@ -6,22 +6,22 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class TripRetrieve implements TripRepository{
+public class TripRetrieve implements TripRepository {
 
   private final List<Trip> trips = new LinkedList<>();
 
   @Override
   public Trip saveOrUpdate(Trip trip) {
     int iniSize = trips.size();
-    if(trip == null) throw new IllegalArgumentException("Trip must not be null");
+    if (trip == null) throw new IllegalArgumentException("Trip must not be null");
     trips.add(trip);
-    if(trips.size() > iniSize) return trip;
+    if (trips.size() > iniSize) return trip;
     else throw new UnknownError("something went wrong during saving");
   }
 
   @Override
   public boolean remove(Trip trip) {
-    if(trip == null) throw new IllegalArgumentException("Trip must not be null");
+    if (trip == null) throw new IllegalArgumentException("Trip must not be null");
     return trips.remove(trip);
   }
 
