@@ -8,13 +8,9 @@ public interface TripRepository {
 
   Trip saveOrUpdate(Trip trip);
 
-  Trip remove(Trip trip);
-
-  Trip remove(String uid);
+  boolean remove(Trip trip);
 
   List<Trip> getAll();
-
-  Trip search(String uid);
 
   Trip search(Trip trip);
 

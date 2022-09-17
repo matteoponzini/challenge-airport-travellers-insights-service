@@ -12,30 +12,22 @@ public class TripRetrieve implements TripRepository{
 
   @Override
   public Trip saveOrUpdate(Trip trip) {
+    int iniSize = trips.size();
     if(trip == null) throw new IllegalArgumentException("Trip must not be null");
     trips.add(trip);
-    if(trips.contains(trip)) return trip;
+    if(trips.size() > iniSize) return trip;
     else throw new UnknownError("something went wrong during saving");
   }
 
   @Override
-  public Trip remove(Trip trip) {
-    return null;
-  }
-
-  @Override
-  public Trip remove(String uid) {
-    return null;
+  public boolean remove(Trip trip) {
+    if(trip == null) throw new IllegalArgumentException("Trip must not be null");
+    return trips.remove(trip);
   }
 
   @Override
   public List<Trip> getAll() {
     return new ArrayList<>(trips);
-  }
-
-  @Override
-  public Trip search(String uid) {
-    return null;
   }
 
   @Override

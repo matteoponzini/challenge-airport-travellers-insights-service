@@ -5,6 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -33,23 +35,30 @@ class TripRetrieveTest {
 
 
   @Test
-  void remove() {
-
+  void removeWithTripRecordSucceed(){
+    var tripExpected = new Trip("JFK", "LIN", LocalDate.of(2020,10,12),LocalDate.of(2020,10,15) );
+    tripRetrieve.saveOrUpdate(tripExpected);
+    assertTrue(tripRetrieve.remove(tripExpected));
   }
 
   @Test
-  void testRemove() {
+  void removeWithTripListsEmptyIsFalse(){
+    var tripExpected = new Trip("JFK", "LIN", LocalDate.of(2020,10,12),LocalDate.of(2020,10,15) );
+    assertFalse(tripRetrieve.remove(tripExpected));
+  }
+
+  @Test
+  void removeShouldFailWhenTripIsNull(){
+    var error = assertThrows(IllegalArgumentException.class, () -> tripRetrieve.remove(null));
+    assertEquals(error.getMessage(),"Trip must not be null");
   }
 
   @Test
   void getAll() {
-  }
-
-  @Test
-  void search() {
-  }
-
-  @Test
-  void testSearch() {
+    var tripsExpected = IntStream.range(0, 5)
+      .mapToObj((i)->new Trip("JFK", "LIN", LocalDate.of(2020,10,12),LocalDate.of(2020,10,15) ))
+      .collect(Collectors.toList());
+    tripsExpected.forEach(trip ->tripRetrieve.saveOrUpdate(trip));
+    assertEquals(tripsExpected,tripRetrieve.getAll());
   }
 }
