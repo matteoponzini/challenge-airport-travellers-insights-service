@@ -1,5 +1,6 @@
 package ai.faire.challenge.airport.infrastructure;
 
+import ai.faire.challenge.airport.repository.TripRetrieve;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -12,6 +13,12 @@ import org.springframework.context.annotation.Primary;
 
 @Configuration
 public class BeanConfiguration {
+
+
+  @Bean
+  TripRetrieve tripRetrieve() {
+    return new TripRetrieve();
+  }
 
   @Bean
   ObjectMapper yamlReader() {
