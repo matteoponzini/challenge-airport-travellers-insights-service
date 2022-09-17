@@ -17,8 +17,11 @@ public class TripRetrieve implements TripRepository {
       throw new IllegalArgumentException("Trip must not be null");
     }
     trips.add(trip);
-    if (trips.size() > iniSize) return trip;
-    else throw new UnknownError("something went wrong during saving");
+    if (trips.size() > iniSize) {
+      return trip;
+    } else {
+      throw new UnknownError("something went wrong during saving");
+    }
   }
 
   @Override
