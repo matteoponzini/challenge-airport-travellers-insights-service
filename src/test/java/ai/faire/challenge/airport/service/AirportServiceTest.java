@@ -348,8 +348,8 @@ class AirportServiceTest {
           10,
           0.0,
           90,
-          0.0)))
-      , "JFK", LocalDate.of(2020, 10, 1), LocalDate.of(2020, 10, 1));
+          0.0))),
+      "JFK", LocalDate.of(2020, 10, 1), LocalDate.of(2020, 10, 1));
 
     var trends = airportService.trend("JFK",
       LocalDate.of(2020, 10, 1),
@@ -369,7 +369,10 @@ class AirportServiceTest {
   }
 
 
-  AirportService airportTrend(List<InsightParams> insightsParams, String airport, LocalDate startDate, LocalDate endDate) {
+  AirportService airportTrend(List<InsightParams> insightsParams,
+                              String airport,
+                              LocalDate startDate,
+                              LocalDate endDate) {
     var mockAirportService = Mockito.mock(AirportService.class);
     insightsParams.forEach(insightParams ->
       Mockito.when(mockAirportService.insights(insightParams.airport(), insightParams.date()))
