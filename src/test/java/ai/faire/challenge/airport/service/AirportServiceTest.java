@@ -3,7 +3,6 @@ package ai.faire.challenge.airport.service;
 import ai.faire.challenge.airport.model.Insights;
 import ai.faire.challenge.airport.model.Trend;
 import ai.faire.challenge.airport.model.Trip;
-import ai.faire.challenge.airport.repository.TripRetrieve;
 import ai.faire.challenge.airport.retrieve.amadeus.AmadeusCall;
 import com.amadeus.resources.Prediction;
 import com.google.gson.GsonBuilder;
@@ -406,7 +405,7 @@ class AirportServiceTest {
   }
 
   private AirportService instanceAirportService(List<Trip> trips, Map<Trip, PredictionParams> tripPrediction) {
-    var tripRetrieve = Mockito.mock(TripRetrieve.class);
+    var tripRetrieve = Mockito.mock(TripService.class);
     Mockito.when(tripRetrieve.getAll()).thenReturn(trips);
     var retrieve = Mockito.mock(AmadeusCall.class);
     tripPrediction.forEach((key, value) -> Mockito.when(retrieve

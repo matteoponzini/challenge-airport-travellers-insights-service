@@ -13,26 +13,26 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-class TripRetrieveTest {
+class ConcreteTripRepositoryTest {
 
 
-  private TripRetrieve tripRetrieve;
+  private ConcreteTripRepository concreteTripRepository;
 
   @BeforeEach
   void init() {
-    tripRetrieve = new TripRetrieve();
+    concreteTripRepository = new ConcreteTripRepository();
   }
 
   @Test
   void saveWithTripRecordSucceed() {
     var tripExpected = new Trip("JFK", "LIN", LocalDate.of(2020, 10, 12), LocalDate.of(2020, 10, 15));
-    var tripSaved = tripRetrieve.saveOrUpdate(tripExpected);
+    var tripSaved = concreteTripRepository.saveOrUpdate(tripExpected);
     assertEquals(tripExpected, tripSaved);
   }
 
   @Test
   void saveShouldFailWhenTripIsNull() {
-    var error = assertThrows(IllegalArgumentException.class, () -> tripRetrieve.saveOrUpdate(null));
+    var error = assertThrows(IllegalArgumentException.class, () -> concreteTripRepository.saveOrUpdate(null));
     assertEquals(error.getMessage(), "Trip must not be null");
   }
 
@@ -40,19 +40,19 @@ class TripRetrieveTest {
   @Test
   void removeWithTripRecordSucceed() {
     var tripExpected = new Trip("JFK", "LIN", LocalDate.of(2020, 10, 12), LocalDate.of(2020, 10, 15));
-    tripRetrieve.saveOrUpdate(tripExpected);
-    assertTrue(tripRetrieve.remove(tripExpected));
+    concreteTripRepository.saveOrUpdate(tripExpected);
+    assertTrue(concreteTripRepository.remove(tripExpected));
   }
 
   @Test
   void removeWithTripListsEmptyIsFalse() {
     var tripExpected = new Trip("JFK", "LIN", LocalDate.of(2020, 10, 12), LocalDate.of(2020, 10, 15));
-    assertFalse(tripRetrieve.remove(tripExpected));
+    assertFalse(concreteTripRepository.remove(tripExpected));
   }
 
   @Test
   void removeShouldFailWhenTripIsNull() {
-    var error = assertThrows(IllegalArgumentException.class, () -> tripRetrieve.remove(null));
+    var error = assertThrows(IllegalArgumentException.class, () -> concreteTripRepository.remove(null));
     assertEquals(error.getMessage(), "Trip must not be null");
   }
 
@@ -61,7 +61,7 @@ class TripRetrieveTest {
     var tripsExpected = IntStream.range(0, 5)
       .mapToObj((i) -> new Trip("JFK", "LIN", LocalDate.of(2020, 10, 12), LocalDate.of(2020, 10, 15)))
       .collect(Collectors.toList());
-    tripsExpected.forEach(trip -> tripRetrieve.saveOrUpdate(trip));
-    assertEquals(tripsExpected, tripRetrieve.getAll());
+    tripsExpected.forEach(trip -> concreteTripRepository.saveOrUpdate(trip));
+    assertEquals(tripsExpected, concreteTripRepository.getAll());
   }
 }
