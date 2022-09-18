@@ -11,6 +11,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -61,6 +62,9 @@ public class AirportService {
 
   public List<Trend> trend(String airportCode, LocalDate startDate, LocalDate endDate) {
     var firstInsight = insights(airportCode, startDate);
+    if (firstInsight == null) {
+      return Collections.emptyList();
+    }
     var dayAfterStartDay = startDate.plusDays(1);
 
     var insights = dayAfterStartDay
