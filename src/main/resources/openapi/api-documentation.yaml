@@ -1,19 +1,17 @@
 openapi: 3.0.3
-
+x-stoplight:
+  id: xs14p86sgajdr
 info:
   title: Airport travellers insights service
   description: Service providing insights on flights and airports
   version: '1.0'
-
 servers:
   - url: ''
-
 tags:
   - name: Travel
     description: Operations to manage travels
   - name: Airport
     description: Operation to retrieve information on airports
-
 paths:
   /trips:
     post:
@@ -24,7 +22,8 @@ paths:
 
         Origin and destination are represented by their IATA codes and dates must be in the future.
       operationId: registerTrip
-      tags: [ Travel ]
+      tags:
+        - Travel
       requestBody:
         description: Trip information
         required: true
@@ -32,6 +31,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RegisterTripRequest'
+            examples: { }
       responses:
         '201':
           description: Trip registration registered
@@ -39,12 +39,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RegisterTripResponse'
+              examples: { }
+    get:
+      summary: ''
+      operationId: get-trips
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RegisterTripResponse'
+              examples: { }
+      description: Returns all trips that have been recorded
+    delete:
+      summary: ''
+      operationId: delete-trips
+      responses:
+        '200':
+          description: OK
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterTripRequest'
+      description: Passing the trip you want to delete will delete it
   /airport-insights:
     post:
       summary: Get airport insights
-      description: '*TODO Fill this with description*'
+      description: 'return the number of traveller that transit through the airport in that date, the number of travellers that are travelling for leisure and for business and the probabilities'
       operationId: getAirportInsights
-      tags: [ Airport ]
+      tags:
+        - Airport
       responses:
         '200':
           description: Airport insights
@@ -52,7 +80,54 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetAirportInsightsResponse'
-
+              examples: { }
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: airportCode
+          required: true
+          description: Airport identification code
+        - schema:
+            type: string
+          in: query
+          name: date
+          description: search date of the people who are at that airport
+          required: true
+  /airport-trend:
+    get:
+      summary: Your GET endpoint
+      tags: [ ]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAirportTrend'
+      operationId: get-airport-trend
+      description: 'Return the number of travellers that transit through the airport, the number of travellers that are travelling for leisure and for business and their trends with reference to the previous day for each day within the specified range.'
+      parameters:
+        - schema:
+            type: string
+          in: query
+          required: true
+          name: airportCode
+          description: Airport identification code
+        - schema:
+            type: string
+            format: date
+          in: query
+          required: true
+          name: startDate
+          description: included start date that identifies when the search begins
+        - schema:
+            type: string
+            format: date
+          in: query
+          required: true
+          name: endDate
+          description: end date included to create the trend
 components:
   schemas:
     RegisterTripRequest:
@@ -139,4 +214,39 @@ components:
     AirportIataCode:
       description: IATA code
       type: string
-      example: "LIN"
+      example: LIN
+    GetAirportTrend:
+      title: GetAirportTrend
+      x-stoplight:
+        id: fnmlylcrdtwut
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          example: '2020-12-10'
+        travelers:
+          type: number
+          format: int
+          minimum: 0
+        trend:
+          type: number
+          format: int
+          minimum: 0
+        businessTravellers:
+          type: number
+          format: int
+          minimum: 0
+        businessTravellersTrend:
+          type: number
+          format: int
+          minimum: 0
+        leisureTravellers:
+          type: number
+          format: int
+          minimum: 0
+        leisureTravellersTrend:
+          type: number
+          format: int
+          minimum: 0
+      x-examples: { }
