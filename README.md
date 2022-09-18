@@ -120,8 +120,9 @@ To compile and verify the project run:
 
 ## Configuration
 
-if you want to use your keys to call amadeus just go to application.yaml and set your keys, i would have liked to set it
-with some other variable or a vault
+if you want to use your keys to call amadeus
+just go to application.yaml and set your keys.
+I would have liked to set it with some other variable or a vault
 
 ## Run the service
 
