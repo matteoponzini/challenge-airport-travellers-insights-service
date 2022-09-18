@@ -83,19 +83,19 @@ scaffold with the purpose of simplifying the development of the service.
 The activities to be accomplished are listed herein.
 
 - [ ] Complete the documentation of the API updating the OpenAPI we provide by
-      designing the missing parts.
-- [ ] Implement the service operations as described in section
-      [Service capabilities](#service-capabilities).
+  designing the missing parts.
+- [X] Implement the service operations as described in section
+  [Service capabilities](#service-capabilities).
 - [ ] Implement tests to verify that correctness of the service functionalities
-      and prevent regressions on further changes.
-- [ ] Add instructions to build a [Docker](https://www.docker.com/) container
-      image containing the service and explain how to launch it.
-      Document it in section [Run with Docker](#run-with-docker) in this page.
+  and prevent regressions on further changes.
+- [X] Add instructions to build a [Docker](https://www.docker.com/) container
+  image containing the service and explain how to launch it.
+  Document it in section [Run with Docker](#run-with-docker) in this page.
 - [ ] Fill the *:pencil2: TODOs* in this README file.
-- [ ] Upload the code to a public repository or a private one after granting the
-      access to [gilberto@faire.ai](mailto:gilberto@faire.ai) (Head of
-      Technology @ *faireai*); we may request to grant access to other
-      colleagues that will review the code.
+- [X] Upload the code to a public repository or a private one after granting the
+  access to [gilberto@faire.ai](mailto:gilberto@faire.ai) (Head of
+  Technology @ *faireai*); we may request to grant access to other
+  colleagues that will review the code.
 
 ### What we evaluate
 
@@ -120,7 +120,8 @@ To compile and verify the project run:
 
 ## Configuration
 
-*:pencil2: TODO Document how to configure the service.*
+if you want to use your keys to call amadeus just go to application.yaml and set your keys, i would have liked to set it
+with some other variable or a vault
 
 ## Run the service
 
@@ -132,7 +133,27 @@ The service can be launched running the following command:
 
 ### Run with Docker
 
-*:pencil2: TODO Document how to run the service using Docker.*
+Run the service using Docker is very simple
+open the terminal in this project, and execute the following commands
+PS: obviously you need Docker on your machine and turn on Docker.
+
+this command is used to create a project build
+
+```shell
+% ./gradlew build
+```
+
+this command is used to create a docker file and docker images
+
+```shell
+% ./gradlew jibDockerBuild
+```
+
+this command is to execute docker images on your docker
+
+```shell
+% ./gradlew dockerRun
+```
 
 ## Usage
 
