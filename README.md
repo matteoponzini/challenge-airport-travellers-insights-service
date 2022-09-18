@@ -138,6 +138,8 @@ Run the service using Docker is very simple
 open the terminal in this project, and execute the following commands
 PS: obviously you need Docker on your machine and turn on Docker.
 
+The service will be exposed on 5050
+
 this command is used to create a project build
 
 ```shell
