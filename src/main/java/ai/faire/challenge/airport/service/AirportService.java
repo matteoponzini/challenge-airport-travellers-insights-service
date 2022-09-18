@@ -3,7 +3,6 @@ package ai.faire.challenge.airport.service;
 import ai.faire.challenge.airport.model.Insights;
 import ai.faire.challenge.airport.model.Trend;
 import ai.faire.challenge.airport.model.Trip;
-import ai.faire.challenge.airport.repository.TripRetrieve;
 import ai.faire.challenge.airport.retrieve.RetrieveFromRemote;
 import com.amadeus.resources.Prediction;
 import org.springframework.stereotype.Service;
@@ -21,12 +20,12 @@ public class AirportService {
 
   public static final String BUSINESS_TRIP = "BUSINESS";
   public static final String LEISURE_TRIP = "LEISURE";
-  private final TripRetrieve tripRetrieve;
-  private final RetrieveFromRemote<Prediction, Trip> retrieve;
+  private final TripService tripService;
+  private final RetrieveFromRemote<Prediction, Trip> retrieveFromRemote;
 
-  public AirportService(TripRetrieve tripRetrieve, RetrieveFromRemote<Prediction, Trip> retrieve) {
-    this.tripRetrieve = tripRetrieve;
-    this.retrieve = retrieve;
+  public AirportService(TripService tripService, RetrieveFromRemote<Prediction, Trip> retrieve) {
+    this.tripService = tripService;
+    this.retrieveFromRemote = retrieve;
   }
 
   public Insights insights(String airportCode, LocalDate date) {
@@ -37,13 +36,16 @@ public class AirportService {
 
     getTravellersTransitInAirportThisDate(airportCode, date)
       .forEach(trip ->
-        retrieve.call(trip).ifPresent(prediction -> {
-          if (BUSINESS_TRIP.equals(prediction.getResult())) {
-            insightCounter(businessNumber, businessTotalProbability, prediction);
-          } else if (LEISURE_TRIP.equals(prediction.getResult())) {
-            insightCounter(leisureNumber, leisureTotalProbability, prediction);
-          }
-        }));
+        retrieveFromRemote.call(trip)
+          .ifPresent(prediction -> {
+              if (BUSINESS_TRIP.equals(prediction.getResult())) {
+                insightCounter(businessNumber, businessTotalProbability, prediction);
+              } else if (LEISURE_TRIP.equals(prediction.getResult())) {
+                insightCounter(leisureNumber, leisureTotalProbability, prediction);
+              }
+            }
+          )
+      );
 
     var averageLeisureProbability = getAverageProbability(leisureNumber.get(), leisureTotalProbability.get());
     var averageBusinessProbability = getAverageProbability(businessNumber.get(), businessTotalProbability.get());
@@ -103,11 +105,12 @@ public class AirportService {
     if (!StringUtils.hasText(airportCode)) {
       throw new IllegalArgumentException("Airport code must not be null");
     }
+
     if (date == null) {
       throw new IllegalArgumentException("Date must not be null");
     }
 
-    return tripRetrieve.getAll()
+    return tripService.getAll()
       .stream()
       .filter(trip -> thereIsAnyOneInTheAirportThisDay(airportCode, date, trip))
       .toList();

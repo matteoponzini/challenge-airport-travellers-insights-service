@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-public class TripRetrieve implements TripRepository {
+public class ConcreteTripRepository implements TripRepository {
 
   private final List<Trip> trips = new LinkedList<>();
 
@@ -43,6 +43,6 @@ public class TripRetrieve implements TripRepository {
 
   @Override
   public Trip search(Trip trip) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 }

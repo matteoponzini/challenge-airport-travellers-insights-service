@@ -1,7 +1,7 @@
 package ai.faire.challenge.airport.service;
 
 import ai.faire.challenge.airport.model.Trip;
-import ai.faire.challenge.airport.repository.TripRetrieve;
+import ai.faire.challenge.airport.repository.ConcreteTripRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -10,24 +10,24 @@ import java.util.List;
 @Service
 public class TripService {
 
-  private final TripRetrieve tripRetrieve;
+  private final ConcreteTripRepository concreteTripRepository;
 
-  public TripService(TripRetrieve tripRetrieve) {
-    this.tripRetrieve = tripRetrieve;
+  public TripService(ConcreteTripRepository concreteTripRepository) {
+    this.concreteTripRepository = concreteTripRepository;
   }
 
   public Trip saveOrUpdate(Trip trip) {
     isValidTripOrError(trip);
-    return tripRetrieve.saveOrUpdate(trip);
+    return concreteTripRepository.saveOrUpdate(trip);
   }
 
   public boolean remove(Trip trip) {
     isValidTripOrError(trip);
-    return tripRetrieve.remove(trip);
+    return concreteTripRepository.remove(trip);
   }
 
   public List<Trip> getAll() {
-    return tripRetrieve.getAll();
+    return concreteTripRepository.getAll();
   }
 
   private void isValidTripOrError(Trip trip) {
