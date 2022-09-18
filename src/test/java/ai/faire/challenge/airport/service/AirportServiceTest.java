@@ -3,110 +3,220 @@ package ai.faire.challenge.airport.service;
 import ai.faire.challenge.airport.model.Trip;
 import ai.faire.challenge.airport.repository.TripRetrieve;
 import ai.faire.challenge.airport.retrieve.amadeus.AmadeusCall;
-import com.amadeus.exceptions.ResponseException;
 import com.amadeus.resources.Prediction;
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest
 class AirportServiceTest {
 
-
-  @Autowired
-  private TripService tripService;
-
-  @Autowired
-  private AirportService airportService;
-
   @Test
-  void insights() throws ResponseException {
-    List<Trip> trips = List.of(
-      new Trip("JFK", "LIN", LocalDate.of(2020, 10, 10), LocalDate.of(2020, 10, 10)),
-      new Trip("MXA", "NPA", LocalDate.of(2020, 10, 10), LocalDate.of(2020, 10, 10))
+  void insightsWithOnePersonInAirportBusiness() {
+    var trips = List.of(
+      new Trip("JFK", "LIN",
+        LocalDate.of(2020, 10, 10), LocalDate.of(2020, 10, 10)),
+      new Trip("MXA", "NPA",
+        LocalDate.of(2020, 10, 10), LocalDate.of(2020, 10, 10))
     );
-    AirportService airportService = instanceAirportService(trips, trips.get(0), "0.0215402", "BUSINESS", "trip-purpose");
-    assertEquals(1, airportService.insights("JFK", LocalDate.of(2020, 10, 10)).totalTravellers());
+    var airportService = instanceAirportService(
+      trips,
+      Map.of(trips.get(0), new PredictionParams("0.0215402", "BUSINESS", "trip-purpose"))
+    );
+    var insights = airportService.insights("JFK", LocalDate.of(2020, 10, 10));
+    assertEquals(1, insights.totalTravellers());
+    assertEquals(1, insights.businessPurposeTravellers());
+    assertEquals(Double.parseDouble("0.0215402"), insights.businessPurposeProbability());
+    assertEquals(0, insights.leisurePurposeTravellers());
+    assertEquals(0.0, insights.leisurePurposeProbability());
   }
 
   @Test
-  void insightsA() {
-    Trip tripA = new Trip("JFK", "LIN", LocalDate.of(2020, 10, 10), LocalDate.of(2020, 10, 10));
+  void insightsWithTwoPeopleInSameAirportButOneLeavingOtherArrivingOneBusinessOneLeisure() {
+    var trips = List.of(
+      new Trip("JFK", "LIN",
+        LocalDate.of(2020, 10, 10), LocalDate.of(2020, 10, 10)),
+      new Trip("MXA", "JFK",
+        LocalDate.of(2020, 9, 10), LocalDate.of(2020, 10, 10)));
 
-    Trip tripB = new Trip("MXA", "JFK", LocalDate.of(2020, 9, 10), LocalDate.of(2020, 10, 10));
+    var airportService = instanceAirportService(trips,
+      Map.of(
+        trips.get(0), new PredictionParams("0.0215402", "BUSINESS", "trip-purpose"),
+        trips.get(1), new PredictionParams("0.0215402", "LEISURE", "trip-purpose")
+      ));
+    var searchDate = LocalDate.of(2020, 10, 10);
+    var insights = airportService.insights("JFK", searchDate);
 
-    tripService.saveOrUpdate(tripA);
-    tripService.saveOrUpdate(tripB);
-    assertEquals(2, airportService.insights("JFK", LocalDate.of(2020, 10, 10)).totalTravellers());
+    assertEquals("JFK", insights.airportCode());
+    assertEquals(searchDate, insights.date());
+    assertEquals(2, insights.totalTravellers());
+    assertEquals(1, insights.businessPurposeTravellers());
+    assertEquals(Double.parseDouble("0.0215402"), insights.businessPurposeProbability());
+    assertEquals(1, insights.leisurePurposeTravellers());
+    assertEquals(Double.parseDouble("0.0215402"), insights.leisurePurposeProbability());
   }
 
   @Test
-  void insightsB() {
-    Trip tripA = new Trip("JFK", "LIN", LocalDate.of(2020, 10, 10), LocalDate.of(2020, 10, 10));
+  void insightsWithTreeInSameAirportButOneBusinessTwoLeisure() {
+    var trips = List.of(
+      new Trip(
+        "JFK",
+        "LIN",
+        LocalDate.of(2020, 10, 10),
+        LocalDate.of(2020, 10, 10)
+      ),
+      new Trip(
+        "MXA",
+        "JFK",
+        LocalDate.of(2020, 10, 10),
+        LocalDate.of(2020, 10, 15)
+      ),
+      new Trip(
+        "MLS",
+        "JFK",
+        LocalDate.of(2020, 9, 10),
+        LocalDate.of(2020, 10, 10)
+      ),
+      new Trip(
+        "JFK",
+        "BYG",
+        LocalDate.of(2020, 11, 10),
+        LocalDate.of(2020, 12, 10)
+      ),
+      new Trip("MXA",
+        "NYK",
+        LocalDate.of(2020, 9, 10),
+        LocalDate.of(2020, 10, 10)
+      ),
+      new Trip("LIN",
+        "RMA",
+        LocalDate.of(2020, 9, 10),
+        LocalDate.of(2020, 10, 10)
+      ),
+      new Trip("SQL",
+        "JFK",
+        LocalDate.of(2021, 9, 10),
+        LocalDate.of(2021, 10, 10)
+      ));
 
-    Trip tripB = new Trip("MXA", "JFK", LocalDate.of(2020, 9, 10), LocalDate.of(2020, 10, 10));
+    var airportService = instanceAirportService(trips,
+      Map.of(
+        trips.get(0), new PredictionParams("0.0215402", "BUSINESS", "trip-purpose"),
+        trips.get(1), new PredictionParams("0.0215402", "LEISURE", "trip-purpose"),
+        trips.get(2), new PredictionParams("0.0215402", "LEISURE", "trip-purpose"),
+        trips.get(3), new PredictionParams("0.0215402", "LEISURE", "trip-purpose"),
+        trips.get(4), new PredictionParams("0.0215402", "LEISURE", "trip-purpose"),
+        trips.get(5), new PredictionParams("0.0215402", "BUSINESS", "trip-purpose"),
+        trips.get(6), new PredictionParams("0.0215402", "BUSINESS", "trip-purpose")
+      ));
 
-    tripService.saveOrUpdate(tripA);
-    tripService.saveOrUpdate(tripB);
-    assertEquals(2, airportService.insights("JFK", LocalDate.of(2020, 10, 10)).totalTravellers());
+
+    var searchDate = LocalDate.of(2020, 10, 10);
+    var insights = airportService.insights("JFK", searchDate);
+
+    assertEquals("JFK", insights.airportCode());
+    assertEquals(searchDate, insights.date());
+
+    assertEquals(3, insights.totalTravellers());
+    assertEquals(1, insights.businessPurposeTravellers());
+    assertEquals(Double.parseDouble("0.0215402"), insights.businessPurposeProbability());
+    assertEquals(2, insights.leisurePurposeTravellers());
+    assertEquals(Double.parseDouble("0.0215402"), insights.leisurePurposeProbability());
+  }
+
+
+  @Test
+  void insightsWithNoOnePersonInAirport() {
+    var trips = List.of(
+      new Trip(
+        "JFK",
+        "LIN",
+        LocalDate.of(2020, 10, 10),
+        LocalDate.of(2020, 10, 10)
+      ),
+      new Trip(
+        "MXA",
+        "NPA",
+        LocalDate.of(2020, 10, 10),
+        LocalDate.of(2020, 10, 10)
+      )
+    );
+    var airportService = instanceAirportService(trips,
+      Map.of(
+        trips.get(0),
+        new PredictionParams("0.0215402", "BUSINESS", "trip-purpose"))
+    );
+    var insights = airportService.insights("JFK", LocalDate.of(2020, 11, 10));
+    assertEquals(0, insights.totalTravellers());
+    assertEquals(0, insights.businessPurposeTravellers());
+    assertEquals(0.0, insights.businessPurposeProbability());
+    assertEquals(0, insights.leisurePurposeTravellers());
+    assertEquals(0.0, insights.leisurePurposeProbability());
   }
 
   @Test
-  void insightsC() {
-    Trip tripA = new Trip("JFK", "LIN", LocalDate.of(2020, 10, 10), LocalDate.of(2020, 10, 10));
-    Trip tripB = new Trip("MXA", "JFK", LocalDate.of(2020, 9, 10), LocalDate.of(2020, 10, 10));
-    Trip tripF = new Trip("MLS", "JFK", LocalDate.of(2020, 9, 10), LocalDate.of(2020, 10, 10));
-
-    Trip tripC = new Trip("MXA", "NYK", LocalDate.of(2020, 9, 10), LocalDate.of(2020, 10, 10));
-    Trip tripD = new Trip("LIN", "RMA", LocalDate.of(2020, 9, 10), LocalDate.of(2020, 10, 10));
-
-    Trip tripE = new Trip("JFK", "BYG", LocalDate.of(2020, 11, 10), LocalDate.of(2020, 12, 10));
-    Trip tripG = new Trip("SQL", "JFK", LocalDate.of(2021, 9, 10), LocalDate.of(2021, 10, 10));
-
-    tripService.saveOrUpdate(tripA);
-    tripService.saveOrUpdate(tripB);
-    tripService.saveOrUpdate(tripC);
-    tripService.saveOrUpdate(tripD);
-    tripService.saveOrUpdate(tripE);
-    tripService.saveOrUpdate(tripF);
-    tripService.saveOrUpdate(tripG);
-    assertEquals(3, airportService.insights("JFK", LocalDate.of(2020, 10, 10)).totalTravellers());
+  void insightsWithNoTrips() {
+    var airportService = instanceAirportService(Collections.emptyList(), Collections.emptyMap());
+    var insights = airportService.insights("JFK", LocalDate.of(2020, 11, 10));
+    assertEquals(0, insights.totalTravellers());
+    assertEquals(0, insights.businessPurposeTravellers());
+    assertEquals(0.0, insights.businessPurposeProbability());
+    assertEquals(0, insights.leisurePurposeTravellers());
+    assertEquals(0.0, insights.leisurePurposeProbability());
   }
 
+  @Test
+  void insightsShouldFailWhenAirportIsNull() {
+    var airportService = instanceAirportService(Collections.emptyList(), Collections.emptyMap());
+    var error = assertThrows(IllegalArgumentException.class,
+      () -> airportService.insights(null, LocalDate.of(2020, 11, 10)));
+    assertEquals("Airport code must not be null", error.getMessage());
+  }
 
-  private Prediction prediction(String probability, String result, String subType) {
-    JsonObject jsonObject = new JsonObject();
+  @Test
+  void insightsShouldFailWhenAirportIsEmpty() {
+    var airportService = instanceAirportService(Collections.emptyList(), Collections.emptyMap());
+    var error = assertThrows(IllegalArgumentException.class,
+      () -> airportService.insights("", LocalDate.of(2020, 11, 10)));
+    assertEquals("Airport code must not be null", error.getMessage());
+  }
+
+  @Test
+  void insightsShouldFailWhenDateIsNull() {
+    var airportService = instanceAirportService(Collections.emptyList(), Collections.emptyMap());
+    var error = assertThrows(IllegalArgumentException.class,
+      () -> airportService.insights("JFK", null));
+    assertEquals("Date must not be null", error.getMessage());
+  }
+
+  private Prediction prediction(PredictionParams predictionParams) {
+    var jsonObject = new JsonObject();
     jsonObject.add("id", new JsonPrimitive(UUID.randomUUID().toString()));
-    jsonObject.add("probability", new JsonPrimitive(probability));
-    jsonObject.add("result", new JsonPrimitive(result));
-    jsonObject.add("subType", new JsonPrimitive(subType));
+    jsonObject.add("probability", new JsonPrimitive(predictionParams.probability()));
+    jsonObject.add("result", new JsonPrimitive(predictionParams.result()));
+    jsonObject.add("subType", new JsonPrimitive(predictionParams.subType()));
     jsonObject.add("type", new JsonPrimitive("prediction"));
-    Gson gson = new GsonBuilder().create();
-    return gson.fromJson(jsonObject, Prediction.class);
+    return new GsonBuilder().create().fromJson(jsonObject, Prediction.class);
   }
 
-  private AirportService instanceAirportService(List<Trip> trips, Trip queryParam, String probability, String result, String subType) {
-    TripRetrieve tripRetrieve = Mockito.mock(TripRetrieve.class);
+  private AirportService instanceAirportService(List<Trip> trips, Map<Trip, PredictionParams> tripPrediction) {
+    var tripRetrieve = Mockito.mock(TripRetrieve.class);
     Mockito.when(tripRetrieve.getAll()).thenReturn(trips);
-
-    AmadeusCall retrieve = Mockito.mock(AmadeusCall.class);
-    Mockito.when(retrieve
-        .call(queryParam))
-      .thenReturn(prediction("0.9984415", "BUSINESS", "trip-purpose"));
-
+    var retrieve = Mockito.mock(AmadeusCall.class);
+    tripPrediction.forEach((key, value) -> Mockito.when(retrieve
+        .call(key))
+      .thenReturn(Optional.ofNullable(prediction(value))));
     return new AirportService(tripRetrieve, retrieve);
   }
 
+  public record PredictionParams(String probability, String result, String subType) {
+  }
 
 }

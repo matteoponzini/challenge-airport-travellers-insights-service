@@ -27,6 +27,6 @@ class AmadeusCallTest {
   @Test
   void callRetrieve200() {
     var response = amadeusCall.call(new Trip("JFK", "LIN", LocalDate.of(2022, 9, 10), LocalDate.of(2022, 9, 15)));
-    assertEquals(response.getResponse().getStatusCode(), 200);
+    assertEquals(response.get().getResponse().getStatusCode(), 200);
   }
 }

@@ -3,6 +3,7 @@ package ai.faire.challenge.airport.repository;
 import ai.faire.challenge.airport.model.Trip;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,7 +13,7 @@ public class TripRetrieve implements TripRepository {
 
   @Override
   public Trip saveOrUpdate(Trip trip) {
-    int iniSize = trips.size();
+    var iniSize = trips.size();
     if (trip == null) {
       throw new IllegalArgumentException("Trip must not be null");
     }
@@ -34,6 +35,9 @@ public class TripRetrieve implements TripRepository {
 
   @Override
   public List<Trip> getAll() {
+    if (trips.isEmpty()) {
+      return Collections.emptyList();
+    }
     return new ArrayList<>(trips);
   }
 

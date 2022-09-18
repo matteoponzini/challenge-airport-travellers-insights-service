@@ -4,11 +4,12 @@ import ai.faire.challenge.airport.model.Trip;
 import ai.faire.challenge.airport.retrieve.RetrieveFromRemote;
 import com.amadeus.Amadeus;
 import com.amadeus.Params;
+import com.amadeus.exceptions.ResponseException;
 import com.amadeus.resources.Prediction;
-import com.amadeus.travel.predictions.TripPurpose;
-import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 public class AmadeusCall implements RetrieveFromRemote<Prediction, Trip> {
@@ -21,15 +22,19 @@ public class AmadeusCall implements RetrieveFromRemote<Prediction, Trip> {
   }
 
   @Override
-  @SneakyThrows
-  public Prediction call(Trip trip) {
-    TripPurpose tripPurpose = amadeusClient.travel.predictions.tripPurpose;
-    Params params = Params.with("originLocationCode", trip.getOriginAirportCode())
+  public Optional<Prediction> call(Trip trip) {
+    var tripPurpose = amadeusClient.travel.predictions.tripPurpose;
+    var params = Params.with("originLocationCode", trip.getOriginAirportCode())
       .and("destinationLocationCode", trip.getDestinationAirportCode())
       .and("departureDate", trip.getDepartureDate())
       .and("returnDate", trip.getReturnDate())
       .and("searchDate", trip.getReturnDate().minusYears(1));
-    return tripPurpose.get(params);
+
+    try {
+      return Optional.ofNullable(tripPurpose.get(params));
+    } catch (ResponseException e) {
+      return Optional.empty();
+    }
   }
 
 }

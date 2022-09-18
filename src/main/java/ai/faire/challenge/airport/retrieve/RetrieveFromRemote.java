@@ -1,7 +1,7 @@
 package ai.faire.challenge.airport.retrieve;
 
-import com.amadeus.exceptions.ResponseException;
+import java.util.Optional;
 
 public interface RetrieveFromRemote<T, E> {
-  T call(E e) throws ResponseException;
+  Optional<T> call(E parameters);
 }
