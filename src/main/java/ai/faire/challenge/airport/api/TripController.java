@@ -2,6 +2,7 @@ package ai.faire.challenge.airport.api;
 
 import ai.faire.challenge.airport.model.Trip;
 import ai.faire.challenge.airport.service.TripService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +26,7 @@ public class TripController {
 
   @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE}, consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Trip> saveTrip(@RequestBody Trip trip) {
-    return ResponseEntity.ok(tripService.saveOrUpdate(trip));
+    return ResponseEntity.status(HttpStatus.CREATED).body(tripService.saveOrUpdate(trip));
   }
 
   @DeleteMapping(produces = {MediaType.APPLICATION_JSON_VALUE}, consumes = {MediaType.APPLICATION_JSON_VALUE})

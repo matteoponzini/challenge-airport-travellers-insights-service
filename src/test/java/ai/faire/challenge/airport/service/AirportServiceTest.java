@@ -368,11 +368,23 @@ class AirportServiceTest {
     assertEquals(expectedTrends, trends);
   }
 
+  @Test
+  void airportTrendWithOutTrend() {
+    var airportService = airportTrend(Collections.emptyList(),
+      "JFK", LocalDate.of(2020, 10, 1), LocalDate.of(2020, 10, 1));
 
-  AirportService airportTrend(List<InsightParams> insightsParams,
-                              String airport,
-                              LocalDate startDate,
-                              LocalDate endDate) {
+    var trends = airportService.trend("JFK",
+      LocalDate.of(2020, 10, 1),
+      LocalDate.of(2020, 10, 1)
+    );
+    assertEquals(Collections.emptyList(), trends);
+  }
+
+
+  private AirportService airportTrend(List<InsightParams> insightsParams,
+                                      String airport,
+                                      LocalDate startDate,
+                                      LocalDate endDate) {
     var mockAirportService = Mockito.mock(AirportService.class);
     insightsParams.forEach(insightParams ->
       Mockito.when(mockAirportService.insights(insightParams.airport(), insightParams.date()))
