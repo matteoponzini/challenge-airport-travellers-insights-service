@@ -1,5 +1,7 @@
 package ai.faire.challenge.airport.service;
 
+import ai.faire.challenge.airport.model.Insights;
+import ai.faire.challenge.airport.model.Trend;
 import ai.faire.challenge.airport.model.Trip;
 import ai.faire.challenge.airport.repository.TripRetrieve;
 import ai.faire.challenge.airport.retrieve.amadeus.AmadeusCall;
@@ -200,6 +202,187 @@ class AirportServiceTest {
     assertEquals("Date must not be null", error.getMessage());
   }
 
+  @Test
+  void airportTrendWithCloseDate() {
+    var airportService = airportTrend(List.of(new InsightParams(
+        "JFK",
+        LocalDate.of(2020, 10, 1),
+        new Insights("JFK",
+          LocalDate.of(2020, 10, 1),
+          100,
+          10,
+          0.0,
+          90,
+          0.0)),
+      new InsightParams("JFK", LocalDate.of(2020, 10, 2),
+        new Insights("JFK",
+          LocalDate.of(2020, 10, 1),
+          100,
+          40,
+          0.0,
+          60,
+          0.0))
+    ), "JFK", LocalDate.of(2020, 10, 1), LocalDate.of(2020, 10, 2));
+    var trends = airportService.trend(
+      "JFK",
+      LocalDate.of(2020, 10, 1),
+      LocalDate.of(2020, 10, 2)
+    );
+
+    var expectedTrends = List.of(new Trend(
+        LocalDate.of(2020, 10, 1),
+        100,
+        0,
+        90,
+        0,
+        10,
+        0
+      ),
+      new Trend(
+        LocalDate.of(2020, 10, 1),
+        100,
+        0,
+        60,
+        -30,
+        40,
+        30
+      )
+    );
+    assertEquals(expectedTrends, trends);
+  }
+
+
+  @Test
+  void airportTrendWithMultipleValue() {
+    var airportService =
+      airportTrend(List.of(new InsightParams(
+          "JFK",
+          LocalDate.of(2020, 10, 1),
+          new Insights("JFK",
+            LocalDate.of(2020, 10, 1),
+            100,
+            10,
+            0.0,
+            90,
+            0.0)),
+        new InsightParams("JFK", LocalDate.of(2020, 10, 2),
+          new Insights("JFK",
+            LocalDate.of(2020, 10, 2),
+            100,
+            40,
+            0.0,
+            60,
+            0.0)
+        ),
+        new InsightParams("JFK", LocalDate.of(2020, 10, 3),
+          new Insights("JFK",
+            LocalDate.of(2020, 10, 3),
+            50,
+            10,
+            0.0,
+            40,
+            0.0)),
+        new InsightParams("JFK", LocalDate.of(2020, 10, 4),
+          new Insights("JFK",
+            LocalDate.of(2020, 10, 4),
+            200,
+            100,
+            0.0,
+            100,
+            0.0))
+      ), "JFK", LocalDate.of(2020, 10, 1), LocalDate.of(2020, 10, 4));
+    var trends = airportService.trend(
+      "JFK",
+      LocalDate.of(2020, 10, 1),
+      LocalDate.of(2020, 10, 4)
+    );
+    var expectedTrends = List.of(new Trend(
+        LocalDate.of(2020, 10, 1),
+        100,
+        0,
+        90,
+        0,
+        10,
+        0
+      ),
+      new Trend(
+        LocalDate.of(2020, 10, 2),
+        100,
+        0,
+        60,
+        -30,
+        40,
+        30
+      ),
+      new Trend(
+        LocalDate.of(2020, 10, 3),
+        50,
+        -50,
+        40,
+        -20,
+        10,
+        -30
+      ),
+      new Trend(
+        LocalDate.of(2020, 10, 4),
+        200,
+        150,
+        100,
+        60,
+        100,
+        90
+      )
+    );
+    assertEquals(expectedTrends, trends);
+  }
+
+
+  @Test
+  void airportTrendWithStartDateAndEndDateSame() {
+    var airportService = airportTrend(List.of(new InsightParams(
+        "JFK",
+        LocalDate.of(2020, 10, 1),
+        new Insights("JFK",
+          LocalDate.of(2020, 10, 1),
+          100,
+          10,
+          0.0,
+          90,
+          0.0))),
+      "JFK", LocalDate.of(2020, 10, 1), LocalDate.of(2020, 10, 1));
+
+    var trends = airportService.trend("JFK",
+      LocalDate.of(2020, 10, 1),
+      LocalDate.of(2020, 10, 1)
+    );
+    var expectedTrends = List.of(new Trend(
+        LocalDate.of(2020, 10, 1),
+        100,
+        0,
+        90,
+        0,
+        10,
+        0
+      )
+    );
+    assertEquals(expectedTrends, trends);
+  }
+
+
+  AirportService airportTrend(List<InsightParams> insightsParams,
+                              String airport,
+                              LocalDate startDate,
+                              LocalDate endDate) {
+    var mockAirportService = Mockito.mock(AirportService.class);
+    insightsParams.forEach(insightParams ->
+      Mockito.when(mockAirportService.insights(insightParams.airport(), insightParams.date()))
+        .thenReturn(insightParams.insights()));
+    Mockito
+      .when(mockAirportService.trend(airport, startDate, endDate))
+      .thenCallRealMethod();
+    return mockAirportService;
+  }
+
   private Prediction prediction(PredictionParams predictionParams) {
     var jsonObject = new JsonObject();
     jsonObject.add("id", new JsonPrimitive(UUID.randomUUID().toString()));
@@ -223,4 +406,6 @@ class AirportServiceTest {
   public record PredictionParams(String probability, String result, String subType) {
   }
 
+  public record InsightParams(String airport, LocalDate date, Insights insights) {
+  }
 }

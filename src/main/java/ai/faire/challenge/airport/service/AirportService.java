@@ -1,6 +1,7 @@
 package ai.faire.challenge.airport.service;
 
 import ai.faire.challenge.airport.model.Insights;
+import ai.faire.challenge.airport.model.Trend;
 import ai.faire.challenge.airport.model.Trip;
 import ai.faire.challenge.airport.repository.TripRetrieve;
 import ai.faire.challenge.airport.retrieve.RetrieveFromRemote;
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -26,27 +29,20 @@ public class AirportService {
   }
 
   public Insights insights(String airportCode, LocalDate date) {
-    if (!StringUtils.hasText(airportCode)) {
-      throw new IllegalArgumentException("Airport code must not be null");
-    }
-
-    if (date == null) {
-      throw new IllegalArgumentException("Date must not be null");
-    }
-
     var leisureNumber = new AtomicInteger();
     var businessNumber = new AtomicInteger();
     var leisureTotalProbability = new AtomicReference<>(0.0);
     var businessTotalProbability = new AtomicReference<>(0.0);
 
-    tripRetrieve.getAll().stream().filter(trip -> thereIsAnyOneInTheAirportThisDay(airportCode, date, trip))
-      .forEach(trip -> retrieve.call(trip).ifPresent(prediction -> {
-        if (BUSINESS_TRIP.equals(prediction.getResult())) {
-          insightCounter(businessNumber, businessTotalProbability, prediction);
-        } else if (LEISURE_TRIP.equals(prediction.getResult())) {
-          insightCounter(leisureNumber, leisureTotalProbability, prediction);
-        }
-      }));
+    getTravellersTransitInAirportThisDate(airportCode, date)
+      .forEach(trip ->
+        retrieve.call(trip).ifPresent(prediction -> {
+          if (BUSINESS_TRIP.equals(prediction.getResult())) {
+            insightCounter(businessNumber, businessTotalProbability, prediction);
+          } else if (LEISURE_TRIP.equals(prediction.getResult())) {
+            insightCounter(leisureNumber, leisureTotalProbability, prediction);
+          }
+        }));
 
     var averageLeisureProbability = getAverageProbability(leisureNumber.get(), leisureTotalProbability.get());
     var averageBusinessProbability = getAverageProbability(businessNumber.get(), businessTotalProbability.get());
@@ -61,6 +57,56 @@ public class AirportService {
       businessNumber.get(),
       averageBusinessProbability
     );
+  }
+
+  public List<Trend> trend(String airportCode, LocalDate startDate, LocalDate endDate) {
+    var firstInsight = insights(airportCode, startDate);
+    var dayAfterStartDay = startDate.plusDays(1);
+
+    var insights = dayAfterStartDay
+      .datesUntil(endDate.plusDays(1))
+      .map(date -> insights(airportCode, date))
+      .toList();
+
+    var trends = new ArrayList<Trend>();
+    trends.add(
+      new Trend(firstInsight.date(),
+        firstInsight.totalTravellers(),
+        0,
+        firstInsight.businessPurposeTravellers(),
+        0,
+        firstInsight.leisurePurposeTravellers(),
+        0)
+    );
+
+
+    for (Insights insight : insights) {
+      Trend trend = new Trend(insight.date(),
+        insight.totalTravellers(),
+        insight.totalTravellers() - firstInsight.totalTravellers(),
+        insight.businessPurposeTravellers(),
+        insight.businessPurposeTravellers() - firstInsight.businessPurposeTravellers(),
+        insight.leisurePurposeTravellers(),
+        insight.leisurePurposeTravellers() - firstInsight.leisurePurposeTravellers()
+      );
+      trends.add(trend);
+      firstInsight = insight;
+    }
+    return trends;
+  }
+
+  private List<Trip> getTravellersTransitInAirportThisDate(String airportCode, LocalDate date) {
+    if (!StringUtils.hasText(airportCode)) {
+      throw new IllegalArgumentException("Airport code must not be null");
+    }
+    if (date == null) {
+      throw new IllegalArgumentException("Date must not be null");
+    }
+
+    return tripRetrieve.getAll()
+      .stream()
+      .filter(trip -> thereIsAnyOneInTheAirportThisDay(airportCode, date, trip))
+      .toList();
   }
 
   private boolean thereIsAnyOneInTheAirportThisDay(String airportCode, LocalDate date, Trip obj) {
