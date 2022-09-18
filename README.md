@@ -82,11 +82,11 @@ scaffold with the purpose of simplifying the development of the service.
 
 The activities to be accomplished are listed herein.
 
-- [ ] Complete the documentation of the API updating the OpenAPI we provide by
+- [X] Complete the documentation of the API updating the OpenAPI we provide by
   designing the missing parts.
 - [X] Implement the service operations as described in section
   [Service capabilities](#service-capabilities).
-- [ ] Implement tests to verify that correctness of the service functionalities
+- [X] Implement tests to verify that correctness of the service functionalities
   and prevent regressions on further changes.
 - [X] Add instructions to build a [Docker](https://www.docker.com/) container
   image containing the service and explain how to launch it.
